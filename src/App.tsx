@@ -26,7 +26,7 @@ function AppContent() {
 
   if (currentPhase === 'history') {
     return (
-        <div className="max-w-4xl mx-auto h-[calc(100vh-140px)] animate-fade-in relative z-10">
+        <div className="max-w-4xl mx-auto min-h-[calc(100vh-160px)] animate-fade-in relative z-10 pb-20">
             <History />
         </div>
     );
@@ -35,7 +35,7 @@ function AppContent() {
   return (
     <>
       {currentPhase === 'calendar' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-140px)] animate-fade-in relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[calc(100vh-160px)] animate-fade-in relative z-10 pb-12">
             <div className="lg:col-span-8 h-full">
                 <Calendar />
             </div>
@@ -57,7 +57,7 @@ function AppContent() {
             </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-140px)] animate-fade-in relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[calc(100vh-160px)] animate-fade-in relative z-10 pb-12">
             <div className="lg:col-span-8 h-full">
                 <div className="bg-white rounded-3xl shadow-soft p-4 sm:p-8 h-full flex flex-col items-center justify-center text-center">
                     <div className="max-w-md space-y-6">

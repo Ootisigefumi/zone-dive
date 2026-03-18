@@ -29,6 +29,7 @@ interface TaskContextType {
     completeCurrentTask: () => void;
     getCurrentTask: () => Task | null;
     insertTask: (task: Task) => void;
+    reuseTask: (task: Task) => void;
     clearHistory: () => void;
 }
 
@@ -298,6 +299,17 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         saveTaskToSupabase(task);
     }, [currentTaskIndex, user]);
 
+    const reuseTask = useCallback((task: Task) => {
+        const newTask: Task = {
+            ...task,
+            id: crypto.randomUUID(),
+            createdAt: Date.now(),
+            completedAt: undefined, // Clear completion state
+        };
+        setTasks(prev => [...prev, newTask]);
+        saveTaskToSupabase(newTask);
+    }, [user]);
+
     const clearHistory = useCallback(async () => {
         const completedTasks = tasks.filter(t => t.completedAt);
         if (user && supabase) {
@@ -344,6 +356,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
                 completeCurrentTask,
                 getCurrentTask,
                 insertTask,
+                reuseTask,
                 clearHistory,
             }}
         >
