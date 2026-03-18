@@ -254,29 +254,35 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const startTimer = useCallback(() => {
-        if (tasks.length > 0) {
+        const activeTasks = tasks.filter(t => !t.completedAt);
+        if (activeTasks.length > 0) {
             setCurrentTaskIndex(0);
             setCurrentPhase('timer');
         }
-    }, [tasks.length]);
+    }, [tasks]);
 
     const nextTask = useCallback(() => {
+        const activeTasks = tasks.filter(t => !t.completedAt);
         const nextIndex = currentTaskIndex + 1;
-        if (nextIndex < tasks.length) {
+        if (nextIndex < activeTasks.length) {
             setCurrentTaskIndex(nextIndex);
         } else {
             setCurrentPhase('complete');
         }
-    }, [currentTaskIndex, tasks.length]);
+    }, [currentTaskIndex, tasks]);
 
     const completeCurrentTask = useCallback(() => {
-        if (tasks[currentTaskIndex]) {
+        const activeTasks = tasks.filter(t => !t.completedAt);
+        const taskToComplete = activeTasks[currentTaskIndex];
+        if (taskToComplete) {
             setTasks(prev => {
-                const newTasks = prev.map((t, i) =>
-                    i === currentTaskIndex ? { ...t, completedAt: Date.now() } : t
+                const newTasks = prev.map(t =>
+                    t.id === taskToComplete.id ? { ...t, completedAt: Date.now() } : t
                 );
-                const updatedTask = newTasks[currentTaskIndex];
-                saveTaskToSupabase(updatedTask);
+                const updatedTask = newTasks.find(t => t.id === taskToComplete.id);
+                if (updatedTask) {
+                    saveTaskToSupabase(updatedTask);
+                }
                 return newTasks;
             });
         }
@@ -285,19 +291,27 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     const resetToSetup = useCallback(() => {
         setCurrentPhase('setup');
         setCurrentTaskIndex(0);
-        // We don't necessarily want to clear tasks here if they are part of a history
-        // but for now let's keep the user's logic or refine it.
+        // We keep tasks in state to preserve history. UI will filter them based on completedAt.
     }, []);
 
     const insertTask = useCallback((task: Task) => {
+        const activeTasks = tasks.filter(t => !t.completedAt);
+        const currentActiveTask = activeTasks[currentTaskIndex];
+        
         setTasks(prev => {
             const next = [...prev];
-            // Insert after current task
-            next.splice(currentTaskIndex + 1, 0, task);
+            // Find the global index of the current active task to insert after it
+            const globalIndex = currentActiveTask ? next.findIndex(t => t.id === currentActiveTask.id) : -1;
+            
+            if (globalIndex !== -1) {
+                next.splice(globalIndex + 1, 0, task);
+            } else {
+                next.push(task);
+            }
             return next;
         });
         saveTaskToSupabase(task);
-    }, [currentTaskIndex, user]);
+    }, [currentTaskIndex, tasks, user]);
 
     const reuseTask = useCallback((task: Task) => {
         const newTask: Task = {
@@ -326,7 +340,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const getCurrentTask = useCallback(() => {
-        return tasks[currentTaskIndex] || null;
+        const activeTasks = tasks.filter(t => !t.completedAt);
+        return activeTasks[currentTaskIndex] || null;
     }, [tasks, currentTaskIndex]);
 
     return (
