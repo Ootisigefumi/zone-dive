@@ -1,7 +1,7 @@
-import React from 'react';
+
 import { Zap, Volume2, VolumeX, LogOut, LogIn, User as UserIcon, Calendar as CalendarIcon, Timer as TimerIcon } from 'lucide-react';
 import { useTaskContext } from '../context/TaskContext';
-import { isSupabaseEnabled } from '../lib/supabase';
+
 
 export function Header() {
     const { voiceEnabled, user, setAuthModalOpen, logout, currentPhase, setCurrentPhase } = useTaskContext();
