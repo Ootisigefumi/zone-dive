@@ -1,6 +1,6 @@
 // Task types and interfaces for ZoneDive
 
-export type UnderstandingLevel = 'new' | 'review' | 'perfect';
+export type UnderstandingLevel = 'low' | 'medium' | 'high';
 
 export interface Task {
     id: string;
@@ -33,12 +33,12 @@ export interface AppState {
     events: CalendarEvent[];
     timerState: TimerState;
     voiceEnabled: boolean;
-    currentPhase: 'setup' | 'timer' | 'complete' | 'calendar';
+    currentPhase: 'setup' | 'timer' | 'complete' | 'calendar' | 'history';
 }
 
 // Understanding level display info
 export const LEVEL_INFO: Record<UnderstandingLevel, { label: string; multiplier: number; className: string }> = {
-    new: { label: '初見', multiplier: 1.5, className: 'level-new' },
-    review: { label: '復習', multiplier: 1.0, className: 'level-review' },
-    perfect: { label: '完璧', multiplier: 0.6, className: 'level-perfect' },
+    low: { label: '低 (じっくり)', multiplier: 1.5, className: 'level-new' },
+    medium: { label: '中 (標準)', multiplier: 1.0, className: 'level-review' },
+    high: { label: '高 (ギリギリ)', multiplier: 0.7, className: 'level-perfect' },
 };

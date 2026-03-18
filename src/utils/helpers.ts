@@ -48,9 +48,9 @@ export function analyzeTask(title: string, level: UnderstandingLevel, details: s
 
     // 理解度による乗数適用
     const levelMultipliers: Record<UnderstandingLevel, number> = {
-        new: 1.5,      // 初見: 1.5倍
-        review: 1.0,   // 復習: そのまま
-        perfect: 0.6,  // 完璧: 0.6倍
+        low: 1.5,      // 初見: 1.5倍
+        medium: 1.0,   // 復習: そのまま
+        high: 0.7,     // 完璧: 0.7倍
     };
 
     const adjustedMinutes = Math.round(baseMinutes * levelMultipliers[level]);

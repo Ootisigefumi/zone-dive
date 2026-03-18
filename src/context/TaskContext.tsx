@@ -28,6 +28,8 @@ interface TaskContextType {
     setVoiceEnabled: (enabled: boolean) => void;
     completeCurrentTask: () => void;
     getCurrentTask: () => Task | null;
+    insertTask: (task: Task) => void;
+    clearHistory: () => void;
 }
 
 const TaskContext = createContext<TaskContextType | null>(null);
@@ -282,9 +284,29 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     const resetToSetup = useCallback(() => {
         setCurrentPhase('setup');
         setCurrentTaskIndex(0);
-        // 完了したタスクをクリア
-        setTasks(prev => prev.filter(t => !t.completedAt));
+        // We don't necessarily want to clear tasks here if they are part of a history
+        // but for now let's keep the user's logic or refine it.
     }, []);
+
+    const insertTask = useCallback((task: Task) => {
+        setTasks(prev => {
+            const next = [...prev];
+            // Insert after current task
+            next.splice(currentTaskIndex + 1, 0, task);
+            return next;
+        });
+        saveTaskToSupabase(task);
+    }, [currentTaskIndex, user]);
+
+    const clearHistory = useCallback(async () => {
+        const completedTasks = tasks.filter(t => t.completedAt);
+        if (user && supabase) {
+            for (const t of completedTasks) {
+                await deleteTaskFromSupabase(t.id);
+            }
+        }
+        setTasks(prev => prev.filter(t => !t.completedAt));
+    }, [tasks, user]);
 
     const setVoiceEnabled = useCallback((enabled: boolean) => {
         setVoiceEnabledState(enabled);
@@ -321,6 +343,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
                 setVoiceEnabled,
                 completeCurrentTask,
                 getCurrentTask,
+                insertTask,
+                clearHistory,
             }}
         >
             {children}

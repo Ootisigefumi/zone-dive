@@ -1,10 +1,9 @@
-
-import { Zap, Volume2, VolumeX, LogOut, LogIn, User as UserIcon, Calendar as CalendarIcon, Timer as TimerIcon } from 'lucide-react';
+import { Zap, Volume2, VolumeX, LogOut, LogIn, User as UserIcon, Calendar as CalendarIcon, Timer as TimerIcon, History as HistoryIcon } from 'lucide-react';
 import { useTaskContext } from '../context/TaskContext';
 
 
 export function Header() {
-    const { voiceEnabled, user, setAuthModalOpen, logout, currentPhase, setCurrentPhase } = useTaskContext();
+    const { voiceEnabled, user, setAuthModalOpen, logout, currentPhase, setCurrentPhase, setVoiceEnabled } = useTaskContext();
 
     // Contextには toggleVoice ではなく setVoiceEnabled が現状存在しない場合は
     // 直接定義されていないため、状態管理をどうするか確認。
@@ -32,7 +31,7 @@ export function Header() {
                     </div>
 
                     {/* Navigation Toggle */}
-                    {(currentPhase === 'setup' || currentPhase === 'calendar') && (
+                    {(currentPhase === 'setup' || currentPhase === 'calendar' || currentPhase === 'history') && (
                         <div className="hidden sm:flex bg-slate-100 p-1 rounded-2xl">
                             <button
                                 onClick={() => setCurrentPhase('setup')}
@@ -59,6 +58,19 @@ export function Header() {
                             >
                                 <CalendarIcon size={16} />
                                 カレンダー
+                            </button>
+                            <button
+                                onClick={() => setCurrentPhase('history')}
+                                className={`
+                                    px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all
+                                    ${currentPhase === 'history'
+                                        ? 'bg-white text-[var(--color-ikea-blue)] shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
+                                    }
+                                `}
+                            >
+                                <HistoryIcon size={16} />
+                                履歴
                             </button>
                         </div>
                     )}
@@ -91,7 +103,7 @@ export function Header() {
 
                         {/* 音声トグル */}
                         <button
-                            onClick={() => {/* setVoiceEnabled(!voiceEnabled)に相当する関数をあとで追加 */}}
+                            onClick={() => setVoiceEnabled(!voiceEnabled)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition-all ${voiceEnabled
                                     ? 'bg-[var(--color-ikea-blue)] text-white shadow-md shadow-blue-900/10'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'

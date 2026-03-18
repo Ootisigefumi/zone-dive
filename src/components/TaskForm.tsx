@@ -8,7 +8,7 @@ import { useTaskContext } from '../context/TaskContext';
 export function TaskForm() {
     const { addTask } = useTaskContext();
     const [title, setTitle] = useState('');
-    const [level, setLevel] = useState<UnderstandingLevel>('review');
+    const [level, setLevel] = useState<UnderstandingLevel>('medium');
     const [details, setDetails] = useState('');
     const [estimatedMinutes, setEstimatedMinutes] = useState<number>(10);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -50,7 +50,7 @@ export function TaskForm() {
 
         // フォームリセット
         setTitle('');
-        setLevel('review');
+        setLevel('medium');
         setDetails('');
         setEstimatedMinutes(10);
     };

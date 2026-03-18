@@ -6,6 +6,7 @@ import { CompleteScreen } from './components/CompleteScreen';
 import { Header } from './components/Header';
 import { Auth } from './components/Auth';
 import { Calendar } from './components/Calendar'; // Added Calendar import
+import { History } from './components/History';
 import './index.css';
 
 import { Zap } from 'lucide-react';
@@ -21,6 +22,14 @@ function AppContent() {
   }
   if (!user && currentPhase === 'setup') {
     return <Auth />;
+  }
+
+  if (currentPhase === 'history') {
+    return (
+        <div className="max-w-4xl mx-auto h-[calc(100vh-140px)] animate-fade-in relative z-10">
+            <History />
+        </div>
+    );
   }
 
   return (
