@@ -82,26 +82,27 @@ export function TaskList() {
                                 )}
                             </div>
 
-                            {/* 削除ボタン */}
-                            <button
-                                onClick={() => removeTask(task.id)}
-                                className="p-2 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-95"
-                            >
-                                <Trash2 className="w-5 h-5" />
-                            </button>
+                            {/* 実行 & 削除ボタン */}
+                            <div className="flex flex-col gap-2">
+                                <button
+                                    onClick={() => startTimer(task.id)}
+                                    className="p-3 bg-[var(--color-ikea-blue)] text-white rounded-xl hover:brightness-110 active:scale-95 transition-all shadow-md shadow-blue-900/10"
+                                    title="タイマーを開始"
+                                >
+                                    <Play className="w-5 h-5 fill-current" />
+                                </button>
+                                <button
+                                    onClick={() => removeTask(task.id)}
+                                    className="p-3 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-95"
+                                    title="削除"
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
-
-            {/* スタートボタン */}
-            <button
-                onClick={startTimer}
-                className="btn btn-primary w-full py-5 text-lg animate-pulse-gentle shadow-lg shadow-blue-900/20"
-            >
-                <Play className="w-6 h-6 fill-current" />
-                タイマースタート
-            </button>
         </div>
     );
 }

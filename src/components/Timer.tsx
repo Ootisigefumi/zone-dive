@@ -11,8 +11,7 @@ export function Timer() {
         getCurrentTask,
         nextTask,
         completeCurrentTask,
-        currentTaskIndex,
-        tasks,
+        activeTaskId,
         voiceEnabled,
         setVoiceEnabled,
         insertTask,
@@ -38,23 +37,18 @@ export function Timer() {
     }, [voiceEnabled, speak]);
 
     const handleComplete = useCallback(() => {
-        const activeTasks = tasks.filter(t => !t.completedAt);
         if (alarmRef.current) {
             alarmRef.current.currentTime = 0;
             alarmRef.current.play().catch(() => { });
         }
         completeCurrentTask();
         if (voiceEnabled) {
-            if (currentTaskIndex < activeTasks.length - 1) {
-                speak(VOICE_MESSAGES.finished);
-            } else {
-                speak(VOICE_MESSAGES.allComplete);
-            }
+            speak(VOICE_MESSAGES.allComplete);
         }
         setTimeout(() => {
             nextTask();
         }, 1500);
-    }, [voiceEnabled, speak, completeCurrentTask, nextTask, currentTaskIndex, tasks]);
+    }, [voiceEnabled, speak, completeCurrentTask, nextTask]);
 
     const {
         remainingSeconds,
@@ -79,7 +73,7 @@ export function Timer() {
 
     useEffect(() => {
         isInitialized.current = false;
-    }, [currentTaskIndex]);
+    }, [activeTaskId]);
 
     if (!currentTask) return null;
 
@@ -149,7 +143,7 @@ export function Timer() {
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 opacity-70 mb-1">
                         <span className="px-2 py-0.5 rounded-md bg-white/20 text-xs font-bold uppercase tracking-wider">
-                            Task {currentTaskIndex + 1} / {tasks.filter(t => !t.completedAt).length}
+                            Focusing on Task
                         </span>
                     </div>
                     <h1 className="text-3xl font-black tracking-tight drop-shadow-sm">

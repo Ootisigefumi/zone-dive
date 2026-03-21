@@ -9,8 +9,8 @@ interface TaskContextType {
     events: CalendarEvent[];
     currentPhase: AppState['currentPhase'];
     setCurrentPhase: (phase: AppState['currentPhase']) => void;
+    activeTaskId: string | null;
     voiceEnabled: boolean;
-    currentTaskIndex: number;
     user: User | null;
     isAuthModalOpen: boolean;
     setAuthModalOpen: (isOpen: boolean) => void;
@@ -22,7 +22,7 @@ interface TaskContextType {
     addEvent: (event: CalendarEvent) => void;
     removeEvent: (id: string) => void;
     updateEvent: (id: string, updates: Partial<CalendarEvent>) => void;
-    startTimer: () => void;
+    startTimer: (id: string) => void;
     nextTask: () => void;
     resetToSetup: () => void;
     setVoiceEnabled: (enabled: boolean) => void;
@@ -39,8 +39,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [currentPhase, setCurrentPhase] = useState<AppState['currentPhase']>('setup');
+    const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
     const [voiceEnabled, setVoiceEnabledState] = useState(true);
-    const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
     const [user, setUser] = useState<User | null>(null);
     const [isAuthModalOpen, setAuthModalOpen] = useState(false);
 
@@ -253,65 +253,41 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         });
     }, []);
 
-    const startTimer = useCallback(() => {
-        const activeTasks = tasks.filter(t => !t.completedAt);
-        if (activeTasks.length > 0) {
-            setCurrentTaskIndex(0);
-            setCurrentPhase('timer');
-        }
-    }, [tasks]);
+    const startTimer = useCallback((id: string) => {
+        setActiveTaskId(id);
+        setCurrentPhase('timer');
+    }, []);
 
     const nextTask = useCallback(() => {
-        const activeTasks = tasks.filter(t => !t.completedAt);
-        const nextIndex = currentTaskIndex + 1;
-        if (nextIndex < activeTasks.length) {
-            setCurrentTaskIndex(nextIndex);
-        } else {
-            setCurrentPhase('complete');
-        }
-    }, [currentTaskIndex, tasks]);
+        // Individual execution: finish current task and go to complete screen
+        setCurrentPhase('complete');
+        setActiveTaskId(null);
+    }, []);
 
     const completeCurrentTask = useCallback(() => {
-        const activeTasks = tasks.filter(t => !t.completedAt);
-        const taskToComplete = activeTasks[currentTaskIndex];
-        if (taskToComplete) {
+        if (activeTaskId) {
             setTasks(prev => {
                 const newTasks = prev.map(t =>
-                    t.id === taskToComplete.id ? { ...t, completedAt: Date.now() } : t
+                    t.id === activeTaskId ? { ...t, completedAt: Date.now() } : t
                 );
-                const updatedTask = newTasks.find(t => t.id === taskToComplete.id);
+                const updatedTask = newTasks.find(t => t.id === activeTaskId);
                 if (updatedTask) {
                     saveTaskToSupabase(updatedTask);
                 }
                 return newTasks;
             });
         }
-    }, [currentTaskIndex, tasks, user]);
+    }, [activeTaskId, user]);
+
+    const insertTask = useCallback((task: Task) => {
+        setTasks(prev => [...prev, task]);
+        saveTaskToSupabase(task);
+    }, [user]);
 
     const resetToSetup = useCallback(() => {
         setCurrentPhase('setup');
-        setCurrentTaskIndex(0);
-        // We keep tasks in state to preserve history. UI will filter them based on completedAt.
+        setActiveTaskId(null);
     }, []);
-
-    const insertTask = useCallback((task: Task) => {
-        const activeTasks = tasks.filter(t => !t.completedAt);
-        const currentActiveTask = activeTasks[currentTaskIndex];
-        
-        setTasks(prev => {
-            const next = [...prev];
-            // Find the global index of the current active task to insert after it
-            const globalIndex = currentActiveTask ? next.findIndex(t => t.id === currentActiveTask.id) : -1;
-            
-            if (globalIndex !== -1) {
-                next.splice(globalIndex + 1, 0, task);
-            } else {
-                next.push(task);
-            }
-            return next;
-        });
-        saveTaskToSupabase(task);
-    }, [currentTaskIndex, tasks, user]);
 
     const reuseTask = useCallback((task: Task) => {
         const newTask: Task = {
@@ -340,9 +316,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const getCurrentTask = useCallback(() => {
-        const activeTasks = tasks.filter(t => !t.completedAt);
-        return activeTasks[currentTaskIndex] || null;
-    }, [tasks, currentTaskIndex]);
+        return tasks.find(t => t.id === activeTaskId) || null;
+    }, [tasks, activeTaskId]);
 
     return (
         <TaskContext.Provider
@@ -352,7 +327,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
                 currentPhase,
                 setCurrentPhase,
                 voiceEnabled,
-                currentTaskIndex,
+                activeTaskId,
                 user,
                 isAuthModalOpen,
                 setAuthModalOpen,
